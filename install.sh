@@ -55,7 +55,7 @@ install_XrayR() {
 }
 
 makeConfig() {
-    echo "------  FAST4G.NET ---------"
+    echo "------  5GSINHVIEN.COM ---------"
 	read -p "Loại website của bạn: V2board"
 	echo "---------------"
 	read -p "Link website:" linkweb
@@ -84,6 +84,7 @@ makeConfig() {
 	fi
          cat <<EOF >/etc/XrayR/config.yml
 Log:
+  Log:
   Level: none 
   AccessPath: # /etc/XrayR/access.Log
   ErrorPath: # /etc/XrayR/error.log
@@ -91,9 +92,9 @@ DnsConfigPath: # /etc/XrayR/dns.json
 InboundConfigPath: # /etc/XrayR/custom_inbound.json
 RouteConfigPath: # /etc/XrayR/route.json
 OutboundConfigPath: # /etc/XrayR/custom_outbound.json
-ConnetionConfig:
+ConnectionConfig:
   Handshake: 4 
-  ConnIdle: 30 
+  ConnIdle: 86400 
   UplinkOnly: 2 
   DownlinkOnly: 4 
   BufferSize: 64 
@@ -103,13 +104,13 @@ Nodes:
     ApiConfig:
       ApiHost: "$linkweb"
       ApiKey: "$apiweb"
-      NodeID: $NodeID80
+      NodeID1: $NodeID80
       NodeType: V2ray 
       Timeout: 30 
       EnableVless: false 
       EnableXTLS: false 
-      SpeedLimit: 0 
-      DeviceLimit: $devide 
+      SpeedLimit: 0
+      DeviceLimit: 0
       RuleListPath: # /etc/XrayR/rulelist
     ControllerConfig:
       DisableSniffing: True
@@ -120,50 +121,46 @@ Nodes:
       DNSType: AsIs 
       EnableProxyProtocol: false 
       EnableFallback: false 
-      FallBackConfigs:  
+      FallBackConfigs:
+      AutoSpeedLimitConfig:
+        Limit: 0
+        WarnTimes: 0
+        LimitSpeed: 0
+        LimitDuration: 0
+      GlobalDeviceLimitConfig:
+        Enable: false
+        RedisAddr: 127.0.0.1:6379
+        RedisPassword: YOUR PASSWORD
+        RedisDB: 0 # Redis DB
+        Timeout: 5
+        Expiry: 60
         -
           SNI: 
           Path: 
           Dest: 80 
           ProxyProtocolVer: 0 
       CertConfig:
-        CertMode: http
+        CertMode: http 
         CertDomain: "$CertDomain80" 
         CertFile: /etc/XrayR/cert-net/fast4g.crt
         KeyFile: /etc/XrayR/cert-net/fast4g.key
         Provider: alidns 
         Email: test@me.com
         DNSEnv: 
-          ALICLOUD_ACCESS_KEY: aaa
-          ALICLOUD_SECRET_KEY: bbb
--
-Log:
-  Level: none 
-  AccessPath: # /etc/XrayR/access.Log
-  ErrorPath: # /etc/XrayR/error.log
-DnsConfigPath: # /etc/XrayR/dns.json
-InboundConfigPath: # /etc/XrayR/custom_inbound.json
-RouteConfigPath: # /etc/XrayR/route.json
-OutboundConfigPath: # /etc/XrayR/custom_outbound.json
-ConnetionConfig:
-  Handshake: 4 
-  ConnIdle: 30 
-  UplinkOnly: 2 
-  DownlinkOnly: 4 
-  BufferSize: 64 
-Nodes:
+        ALICLOUD_ACCESS_KEY: aaa
+        ALICLOUD_SECRET_KEY: bbb
   -
     PanelType: "V2board" 
     ApiConfig:
       ApiHost: "$linkweb"
       ApiKey: "$apiweb"
-      NodeID: $NodeID443
+      NodeID2: $NodeID443
       NodeType: Trojan 
       Timeout: 30 
       EnableVless: false 
       EnableXTLS: false 
-      SpeedLimit: 0 
-      DeviceLimit: $devide 
+      SpeedLimit: 0
+      DeviceLimit: 0
       RuleListPath: # /etc/XrayR/rulelist
     ControllerConfig:
       DisableSniffing: True
@@ -175,21 +172,33 @@ Nodes:
       EnableProxyProtocol: false 
       EnableFallback: false 
       FallBackConfigs:  
+      AutoSpeedLimitConfig:
+        Limit: 0
+        WarnTimes: 0
+        LimitSpeed: 0
+        LimitDuration: 0
+      GlobalDeviceLimitConfig:
+        Enable: false
+        RedisAddr: 127.0.0.1:6379
+        RedisPassword: YOUR PASSWORD
+        RedisDB: 0 # Redis DB
+        Timeout: 5
+        Expiry: 60
         -
           SNI: 
           Path: 
           Dest: 80 
           ProxyProtocolVer: 0 
       CertConfig:
-        CertMode: http
+        CertMode: http 
         CertDomain: "$CertDomain443" 
-        CertFile: /etc/XrayR/cert-net/fast4g.crt
+        CertFile: /etc/XrayR/cert-net/fast4g.crt 
         KeyFile: /etc/XrayR/cert-net/fast4g.key
-        Provider: alidns 
+        Provider: alidns
         Email: test@me.com
         DNSEnv: 
-          ALICLOUD_ACCESS_KEY: aaa
-          ALICLOUD_SECRET_KEY: bbb
+        ALICLOUD_ACCESS_KEY: aaa
+        ALICLOUD_SECRET_KEY: bbb
 EOF
 	cd /etc/XrayR
 	XrayR restart
