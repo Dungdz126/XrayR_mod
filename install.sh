@@ -55,26 +55,28 @@ install_XrayR() {
 }
 
 makeConfig() {
-    echo "------  5GSINHVIEN.COM ---------"
+    echo "------  Config 80 & 443 BY FAST4G.NET ---------"
 	read -p "Loại website của bạn: V2board"
 	echo "---------------"
-	read -p "Link website:" linkweb
+	read -p "Link website: https://5gsinhvien.com"
 	echo "---------------"
-	read -p "API key của web: " apiweb
+	read -p "API key của web: 5gsinhvien.comrevcc"
 	echo "---------------"
 	read -p "Node ID 80: " NodeID80
 	echo -e "Node 80 là: ${NodeID80}"
 	echo "---------------"
-    read -p "Node ID 443: " NodeID443
-    echo -e "Node 443 là: ${NodeID443}"
-  read -p "Nhập Device Limit: " device
-  echo -e "Số Thiết Bị là: ${devide}"
-  echo "---------------"
 	read -p "Nhập CertDomain port 80: " CertDomain80
   echo -e "CertDomain là: ${CertDomain80}"
+  echo "---------------"
+	read -p "Node ID 443: " NodeID443
+	echo -e "Node 80 là: ${NodeID443}"
 	echo "---------------"
-    read -p "Nhập CertDomain port 443: " CertDomain443
-  echo -e "CertDomain là: ${CertDomain443}
+  read -p "Nhập CertDomain port 443: " CertDomain443
+  echo -e "CertDomain là: ${CertDomain443}"
+	echo "---------------"
+  read -p "Nhập limit Device: " limitDevice
+  echo -e "Limit Device là: ${limitDevice}"
+	echo "---------------"
 
 	rm -f /etc/XrayR/config.yml
 	if [[ -z $(~/.acme.sh/acme.sh -v 2>/dev/null) ]]; then
@@ -84,7 +86,6 @@ makeConfig() {
 	fi
          cat <<EOF >/etc/XrayR/config.yml
 Log:
-  Log:
   Level: none 
   AccessPath: # /etc/XrayR/access.Log
   ErrorPath: # /etc/XrayR/error.log
@@ -92,9 +93,9 @@ DnsConfigPath: # /etc/XrayR/dns.json
 InboundConfigPath: # /etc/XrayR/custom_inbound.json
 RouteConfigPath: # /etc/XrayR/route.json
 OutboundConfigPath: # /etc/XrayR/custom_outbound.json
-ConnectionConfig:
+ConnetionConfig:
   Handshake: 4 
-  ConnIdle: 86400 
+  ConnIdle: 30 
   UplinkOnly: 2 
   DownlinkOnly: 4 
   BufferSize: 64 
@@ -102,65 +103,15 @@ Nodes:
   -
     PanelType: "V2board" 
     ApiConfig:
-      ApiHost: "$linkweb"
-      ApiKey: "$apiweb"
-      NodeID1: $NodeID80
+      ApiHost: "https://4gsinhvien.me"
+      ApiKey: "danghoangadmin@4gsinhvien.me"
+      NodeID: $NodeID80
       NodeType: V2ray 
       Timeout: 30 
       EnableVless: false 
       EnableXTLS: false 
-      SpeedLimit: 0
-      DeviceLimit: 0
-      RuleListPath: # /etc/XrayR/rulelist
-    ControllerConfig:
-      DisableSniffing: True
-      ListenIP: 0.0.0.0 
-      SendIP: 0.0.0.0 
-      UpdatePeriodic: 60 
-      EnableDNS: false 
-      DNSType: AsIs 
-      EnableProxyProtocol: false 
-      EnableFallback: false 
-      FallBackConfigs:
-      AutoSpeedLimitConfig:
-        Limit: 0
-        WarnTimes: 0
-        LimitSpeed: 0
-        LimitDuration: 0
-      GlobalDeviceLimitConfig:
-        Enable: false
-        RedisAddr: 127.0.0.1:6379
-        RedisPassword: YOUR PASSWORD
-        RedisDB: 0 # Redis DB
-        Timeout: 5
-        Expiry: 60
-        -
-          SNI: 
-          Path: 
-          Dest: 80 
-          ProxyProtocolVer: 0 
-      CertConfig:
-        CertMode: http 
-        CertDomain: "$CertDomain80" 
-        CertFile: /etc/XrayR/cert-net/fast4g.crt
-        KeyFile: /etc/XrayR/cert-net/fast4g.key
-        Provider: alidns 
-        Email: test@me.com
-        DNSEnv: 
-        ALICLOUD_ACCESS_KEY: aaa
-        ALICLOUD_SECRET_KEY: bbb
-  -
-    PanelType: "V2board" 
-    ApiConfig:
-      ApiHost: "$linkweb"
-      ApiKey: "$apiweb"
-      NodeID2: $NodeID443
-      NodeType: Trojan 
-      Timeout: 30 
-      EnableVless: false 
-      EnableXTLS: false 
-      SpeedLimit: 0
-      DeviceLimit: 0
+      SpeedLimit: 0 
+      DeviceLimit: $limitDevice
       RuleListPath: # /etc/XrayR/rulelist
     ControllerConfig:
       DisableSniffing: True
@@ -172,35 +123,63 @@ Nodes:
       EnableProxyProtocol: false 
       EnableFallback: false 
       FallBackConfigs:  
-      AutoSpeedLimitConfig:
-        Limit: 0
-        WarnTimes: 0
-        LimitSpeed: 0
-        LimitDuration: 0
-      GlobalDeviceLimitConfig:
-        Enable: false
-        RedisAddr: 127.0.0.1:6379
-        RedisPassword: YOUR PASSWORD
-        RedisDB: 0 # Redis DB
-        Timeout: 5
-        Expiry: 60
         -
           SNI: 
           Path: 
           Dest: 80 
           ProxyProtocolVer: 0 
       CertConfig:
-        CertMode: http 
-        CertDomain: "$CertDomain443" 
-        CertFile: /etc/XrayR/cert-net/fast4g.crt 
-        KeyFile: /etc/XrayR/cert-net/fast4g.key
-        Provider: alidns
+        CertMode: http
+        CertDomain: "$CertDomain80" 
+        CertFile: /etc/XrayR/cert-4gsinhvien/4gsinhvien.crt
+        KeyFile: /etc/XrayR/cert-4gsinhvien/4gsinhvien.key
+        Provider: alidns 
         Email: test@me.com
         DNSEnv: 
-        ALICLOUD_ACCESS_KEY: aaa
-        ALICLOUD_SECRET_KEY: bbb
+          ALICLOUD_ACCESS_KEY: aaa
+          ALICLOUD_SECRET_KEY: bbb
+  -
+    PanelType: "V2board" 
+    ApiConfig:
+      ApiHost: "https://4gsinhvien.me"
+      ApiKey: "danghoangadmin@4gsinhvien.me"
+      NodeID: $NodeID443
+      NodeType: V2ray 
+      Timeout: 30 
+      EnableVless: false 
+      EnableXTLS: false 
+      SpeedLimit: 0 
+      DeviceLimit: $limitDevice
+      RuleListPath: # /etc/XrayR/rulelist
+    ControllerConfig:
+      DisableSniffing: True
+      ListenIP: 0.0.0.0 
+      SendIP: 0.0.0.0 
+      UpdatePeriodic: 60 
+      EnableDNS: false 
+      DNSType: AsIs 
+      EnableProxyProtocol: false 
+      EnableFallback: false 
+      FallBackConfigs:  
+        -
+          SNI: 
+          Path: 
+          Dest: 80 
+          ProxyProtocolVer: 0 
+      CertConfig:
+        CertMode: file 
+        CertDomain: "$CertDomain443"
+        CertFile: /etc/XrayR/cert-4gsinhvien/4gsinhvien.crt 
+        KeyFile: /etc/XrayR/cert-4gsinhvien/4gsinhvien.key
+        Provider: cloudflare 
+        Email: test@me.com
+        DNSEnv: 
+          CLOUDFLARE_EMAIL: 
+          CLOUDFLARE_API_KEY: 
+
 EOF
 	cd /etc/XrayR
+	git clone https://github.com/chaomynhan/cert-4gsinhvien.git
 	XrayR restart
 	green "Đã xong, reboot nếu k thành công！"
 	exit 1
