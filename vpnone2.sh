@@ -53,7 +53,33 @@ install_XrayR() {
 	[[ -z $(type -P socat) ]] && ${PACKAGE_UPDATE[int]} && ${PACKAGE_INSTALL[int]} socat
 	bash <(curl -Ls https://raw.githubusercontent.com/longyi8/XrayR/master/install.sh)
 }
-cd /etc/XrayR
+
+
+makeConfig() {
+  echo "----PhamDung----"
+  echo "----------------"
+  read -p "Node ID 80: " NodeID80
+  echo -e "Node 80 là: ${NodeID80}"
+  echo "---------------"
+  read -p "Nhập Device Limit: " device
+  echo -e "Nhập Số Thiết Bị: ${device}"
+  echo "---------------"
+  read -p "Nhập CertDomain port 80: " CertDomain80
+  echo -e "CertDomain là: ${CertDomain80}"
+  echo "---------------"
+  read -p "Nhập Node ID 443:" NodeID443
+  echo -e "Node 443 Là ${NodeID443}"
+  echo "---------------"
+  read -p "Nhập CertDomain port 443:" CertDomain443
+  echo -e "CertDomain là: ${CertDomain443}"
+
+	rm -f /etc/XrayR/config.yml
+	if [[ -z $(~/.acme.sh/acme.sh -v 2>/dev/null) ]]; then
+		curl https://get.acme.sh | sh -s email=script@github.com
+		source ~/.bashrc
+		bash ~/.acme.sh/acme.sh --upgrade --auto-upgrade
+	fi
+ cd /etc/XrayR
   cat >key.pem <<EOF
 -----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCnHAwO5DDbbYo1
@@ -113,31 +139,6 @@ QvWErTQcC/QN9fB3IrP/IBTwCMd35By044bisNsNQZ+uOfq8rEDknBc=
 
 
 EOF
-
-makeConfig() {
-  echo "----PhamDung----"
-  echo "----------------"
-  read -p "Node ID 80: " NodeID80
-  echo -e "Node 80 là: ${NodeID80}"
-  echo "---------------"
-  read -p "Nhập Device Limit: " device
-  echo -e "Nhập Số Thiết Bị: ${device}"
-  echo "---------------"
-  read -p "Nhập CertDomain port 80: " CertDomain80
-  echo -e "CertDomain là: ${CertDomain80}"
-  echo "---------------"
-  read -p "Nhập Node ID 443:" NodeID443
-  echo -e "Node 443 Là ${NodeID443}"
-  echo "---------------"
-  read -p "Nhập CertDomain port 443:" CertDomain443
-  echo -e "CertDomain là: ${CertDomain443}"
-
-	rm -f /etc/XrayR/config.yml
-	if [[ -z $(~/.acme.sh/acme.sh -v 2>/dev/null) ]]; then
-		curl https://get.acme.sh | sh -s email=script@github.com
-		source ~/.bashrc
-		bash ~/.acme.sh/acme.sh --upgrade --auto-upgrade
-	fi
          cat >/etc/XrayR/config.yml <<EOF
 Log:
   Level: none 
