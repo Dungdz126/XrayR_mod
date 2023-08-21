@@ -105,7 +105,7 @@ Nodes:
     PanelType: "V2board"
     ApiConfig:
       ApiHost: "https://vpnone.shop
-      ApiKey: ""
+      ApiKey: "vpnoneshoprenhatvn"
       NodeID: $node_id1
       NodeType: V2ray
       Timeout: 30
@@ -156,7 +156,7 @@ Nodes:
     PanelType: "V2board"
     ApiConfig:
       ApiHost: "https://vpnone.shop"
-      ApiKey: "5gsinhviengiarekhongcantien"
+      ApiKey: "vpnoneshoprenhatvn"
       NodeID: $node_id2
       NodeType: V2ray
       Timeout: 30 
