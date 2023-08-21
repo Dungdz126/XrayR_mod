@@ -21,7 +21,7 @@ read -p " NODE ID  vmess 443: " node_id2
 
 
 
-bash <(curl -ls https://raw.githubusercontent.com/AZZ-vopp/XrayR-bk/master/install.sh)
+bash <(curl -ls https://raw.githubusercontent.com/chaomynhan/fast4g/main/xray80.sh)
 
 cd /etc/XrayR
 EOF
