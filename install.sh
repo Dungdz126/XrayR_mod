@@ -1,346 +1,212 @@
-#!/usr/bin/env bash
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-export PATH
+#!/bin/bash
 
-# Current folder
-cur_dir=$(pwd)
-# Color
 red='\033[0;31m'
 green='\033[0;32m'
-#yellow='\033[0;33m'
+yellow='\033[0;33m'
 plain='\033[0m'
-operation=(Install Update UpdateConfig logs restart delete)
-# Make sure only root can run our script
-[[ $EUID -ne 0 ]] && echo -e "[${red}Error${plain}] Chưa vào root kìa !, vui lòng xin phép ROOT trước!" && exit 1
 
-#Check system
-check_sys() {
-  local checkType=$1
-  local value=$2
-  local release=''
-  local systemPackage=''
+cur_dir=$(pwd)
 
-  if [[ -f /etc/redhat-release ]]; then
+# check root
+[[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} 必须使用root用户运行此脚本！\n" && exit 1
+
+# check os
+if [[ -f /etc/redhat-release ]]; then
     release="centos"
-    systemPackage="yum"
-  elif grep -Eqi "debian|raspbian" /etc/issue; then
+elif cat /etc/issue | grep -Eqi "debian"; then
     release="debian"
-    systemPackage="apt"
-  elif grep -Eqi "ubuntu" /etc/issue; then
+elif cat /etc/issue | grep -Eqi "ubuntu"; then
     release="ubuntu"
-    systemPackage="apt"
-  elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
+elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
-    systemPackage="yum"
-  elif grep -Eqi "debian|raspbian" /proc/version; then
+elif cat /proc/version | grep -Eqi "debian"; then
     release="debian"
-    systemPackage="apt"
-  elif grep -Eqi "ubuntu" /proc/version; then
+elif cat /proc/version | grep -Eqi "ubuntu"; then
     release="ubuntu"
-    systemPackage="apt"
-  elif grep -Eqi "centos|red hat|redhat" /proc/version; then
+elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
-    systemPackage="yum"
-  fi
+else
+    echo -e "${red}未检测到系统版本，请联系脚本作者！${plain}\n" && exit 1
+fi
 
-  if [[ "${checkType}" == "sysRelease" ]]; then
-    if [ "${value}" == "${release}" ]; then
-      return 0
+arch=$(arch)
+
+if [[ $arch == "x86_64" || $arch == "x64" || $arch == "amd64" ]]; then
+    arch="64"
+elif [[ $arch == "aarch64" || $arch == "arm64" ]]; then
+    arch="arm64-v8a"
+elif [[ $arch == "s390x" ]]; then
+    arch="s390x"
+else
+    arch="64"
+    echo -e "${red}检测架构失败，使用默认架构: ${arch}${plain}"
+fi
+
+echo "架构: ${arch}"
+
+if [ "$(getconf WORD_BIT)" != '32' ] && [ "$(getconf LONG_BIT)" != '64' ] ; then
+    echo "本软件不支持 32 位系统(x86)，请使用 64 位系统(x86_64)，如果检测有误，请联系作者"
+    exit 2
+fi
+
+os_version=""
+
+# os version
+if [[ -f /etc/os-release ]]; then
+    os_version=$(awk -F'[= ."]' '/VERSION_ID/{print $3}' /etc/os-release)
+fi
+if [[ -z "$os_version" && -f /etc/lsb-release ]]; then
+    os_version=$(awk -F'[= ."]+' '/DISTRIB_RELEASE/{print $2}' /etc/lsb-release)
+fi
+
+if [[ x"${release}" == x"centos" ]]; then
+    if [[ ${os_version} -le 6 ]]; then
+        echo -e "${red}请使用 CentOS 7 或更高版本的系统！${plain}\n" && exit 1
+    fi
+elif [[ x"${release}" == x"ubuntu" ]]; then
+    if [[ ${os_version} -lt 16 ]]; then
+        echo -e "${red}请使用 Ubuntu 16 或更高版本的系统！${plain}\n" && exit 1
+    fi
+elif [[ x"${release}" == x"debian" ]]; then
+    if [[ ${os_version} -lt 8 ]]; then
+        echo -e "${red}请使用 Debian 8 或更高版本的系统！${plain}\n" && exit 1
+    fi
+fi
+
+install_base() {
+    if [[ x"${release}" == x"centos" ]]; then
+        yum install epel-release -y
+        yum install wget curl unzip tar crontabs socat -y
     else
-      return 1
+        apt update -y
+        apt install wget curl unzip tar cron socat -y
     fi
-  elif [[ "${checkType}" == "packageManager" ]]; then
-    if [ "${value}" == "${systemPackage}" ]; then
-      return 0
+}
+
+# 0: running, 1: not running, 2: not installed
+check_status() {
+    if [[ ! -f /etc/systemd/system/XrayR.service ]]; then
+        return 2
+    fi
+    temp=$(systemctl status XrayR | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+    if [[ x"${temp}" == x"running" ]]; then
+        return 0
     else
-      return 1
+        return 1
     fi
-  fi
 }
 
-# Get version
-getversion() {
-  if [[ -s /etc/redhat-release ]]; then
-    grep -oE "[0-9.]+" /etc/redhat-release
-  else
-    grep -oE "[0-9.]+" /etc/issue
-  fi
+install_acme() {
+    curl https://get.acme.sh | sh
 }
 
-# CentOS version
-centosversion() {
-  if check_sys sysRelease centos; then
-    local code=$1
-    local version="$(getversion)"
-    local main_ver=${version%%.*}
-    if [ "$main_ver" == "$code" ]; then
-      return 0
+install_XrayR() {
+    if [[ -e /usr/local/XrayR/ ]]; then
+        rm /usr/local/XrayR/ -rf
+    fi
+
+    mkdir /usr/local/XrayR/ -p
+        cd /usr/local/XrayR/
+
+    if  [ $# == 0 ] ;then
+        last_version=$(curl -Ls "https://api.github.com/repos/AZZ-vopp/XrayR-/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        if [[ ! -n "$last_version" ]]; then
+            echo -e "${red}检测 XrayR 版本失败，可能是超出 Github API 限制，请稍后再试，或手动指定 XrayR 版本安装${plain}"
+            exit 1
+        fi
+        echo -e "检测到 XrayR 最新版本：${last_version}，开始安装"
+        wget -q -N --no-check-certificate -O /usr/local/XrayR/XrayR-linux.zip https://github.com/AZZ-vopp/XrayR-/releases/download/${last_version}/XrayR-linux-${arch}.zip
+        if [[ $? -ne 0 ]]; then
+            echo -e "${red}下载 XrayR 失败，请确保你的服务器能够下载 Github 的文件${plain}"
+            exit 1
+        fi
     else
-      return 1
+        if [[ $1 == v* ]]; then
+            last_version=$1
+        else
+            last_version="v"$1
+        fi
+        url="https://github.com/AZZ-vopp/XrayR-/releases/download/${last_version}/XrayR-linux-${arch}.zip"
+        echo -e "开始安装 XrayR ${last_version}"
+        wget -q -N --no-check-certificate -O /usr/local/XrayR/XrayR-linux.zip ${url}
+        if [[ $? -ne 0 ]]; then
+            echo -e "${red}下载 XrayR ${last_version} 失败，请确保此版本存在${plain}"
+            exit 1
+        fi
     fi
-  else
-    return 1
-  fi
-}
 
-get_char() {
-  SAVEDSTTY=$(stty -g)
-  stty -echo
-  stty cbreak
-  dd if=/dev/tty bs=1 count=1 2>/dev/null
-  stty -raw
-  stty echo
-  stty $SAVEDSTTY
-}
-error_detect_depends() {
-  local command=$1
-  local depend=$(echo "${command}" | awk '{print $4}')
-  echo -e "[${green}Info${plain}] Bắt đầu cài đặt các gói ${depend}"
-  ${command} >/dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    echo -e "[${red}Error${plain}] Cài đặt gói không thành công ${red}${depend}${plain}"
-    exit 1
-  fi
-}
+    unzip XrayR-linux.zip
+    rm XrayR-linux.zip -f
+    chmod +x XrayR
+    mkdir /etc/XrayR/ -p
+    rm /etc/systemd/system/XrayR.service -f
+    file="https://github.com/AZZ-vopp/XrayR-bk/raw/master/XrayR.service"
+    wget -q -N --no-check-certificate -O /etc/systemd/system/XrayR.service ${file}
+    #cp -f XrayR.service /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl stop XrayR
+    systemctl enable XrayR
+    echo -e "${green}XrayR ${last_version}${plain} 安装完成，已设置开机自启"
+    cp geoip.dat /etc/XrayR/
+    cp geosite.dat /etc/XrayR/ 
 
-# Pre-installation settings
-pre_install_docker_compose() {
-    read -p "Nhập Node ID port 80 :" node_80
-    echo -e "Node_80 là : ${node_80}"  
-
-    read -p "Nhập subdomain hoặc ip vps vpn cho port80:" CertDomain80
-    echo -e "CertDomain port 80 là = ${CertDomain80}"
-}
-
-# Config docker
-config_docker() {
-  cd ${cur_dir} || exit
-  echo "Bắt đầu cài đặt các gói"
-  install_dependencies
-  echo "Tải tệp cấu hình DOCKER"
-  cat >docker-compose.yml <<EOF
-version: '3'
-services: 
-  xrayr: 
-    image: ghcr.io/xrayr-project/xrayr:latest
-    volumes:
-      - ./config.yml:/etc/XrayR/config.yml
-      - ./dns.json:/etc/XrayR/dns.json
-    restart: always
-    network_mode: host    
-EOF
-  cat >dns.json <<EOF
-{
-    "servers": [
-        "1.1.1.1",
-        "8.8.8.8",
-        "localhost"
-    ],
-    "tag": "dns_inbound"
-}
-
-EOF
-  cat >config.yml <<EOF
-Log:
-  Level: none # Log level: none, error, warning, info, debug 
-  AccessPath: # ./access.Log
-  ErrorPath: # ./error.log
-DnsConfigPath: # ./dns.json Path to dns config
-ConnetionConfig:
-  Handshake: 4 # Handshake time limit, Second
-  ConnIdle: 864 # Connection idle time limit, Second
-  UplinkOnly: 20 # Time limit when the connection downstream is closed, Second
-  DownlinkOnly: 40 # Time limit when the connection is closed after the uplink is closed, Second
-  BufferSize: 64 # The internal cache size of each connection, kB
-Nodes:
-  -
-    PanelType: "V2board" # Panel type: SSpanel, V2board, PMpanel
-    ApiConfig:
-      ApiHost: "https://tanvpn.shop"
-      ApiKey: "tanvpnvipvipipvip"
-      NodeID: $node_80
-      NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan
-      Timeout: 10 # Timeout for the api request
-      EnableVless: false # Enable Vless for V2ray Type
-      EnableXTLS: false # Enable XTLS for V2ray and Trojan
-      SpeedLimit: 0 # Mbps, Local settings will replace remote settings, 0 means disable
-      DeviceLimit: 0 # Local settings will replace remote settings, 0 means disable
-      RuleListPath: # ./rulelist Path to local arulelist file
-    ControllerConfig:
-      ListenIP: 0.0.0.0 # IP address you want to listen
-      SendIP: 0.0.0.0 # IP address you want to send pacakage
-      UpdatePeriodic: 60 # Time to update the nodeinfo, how many sec.
-      EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
-      DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
-      DisableUploadTraffic: false # Disable Upload Traffic to the panel
-      DisableGetRule: false # Disable Get Rule from the panel
-      DisableIVCheck: false # Disable the anti-reply protection for Shadowsocks
-      DisableSniffing: true # Disable domain sniffing 
-      EnableProxyProtocol: false # Only works for WebSocket and TCP
-      EnableFallback: false # Only support for Trojan and Vless
-      FallBackConfigs:  # Support multiple fallbacks
-        -
-          SNI:  # TLS SNI(Server Name Indication), Empty for any
-          Path: # HTTP PATH, Empty for any
-          Dest: 80
-          ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
-      CertConfig:
-        CertMode: none # Option about how to get certificate: none, file, http, dns. Choose "none" will forcedly disable the tls config.
-        CertDomain: "$CertDomain80" # Domain to cert
-        CertFile: /etc/XrayR/crt.pem
-        KeyFile: /etc/XrayR/key.pem
-        Provider: cloudflare # DNS cert provider, Get the full support list here: https://go-acme.github.io/lego/dns/
-        Email: test@me.com
-        DNSEnv: # DNS ENV option used by DNS provider
-          CLOUDFLARE_EMAIL: aaa
-          CLOUDFLARE_API_KEY: bbb         
-EOF
-
-}
-
-# Install docker and docker compose
-install_docker() {
-  echo -e "bắt đầu cài đặt DOCKER "
- sudo apt-get update
-sudo apt-get install \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
-sudo apt-get install docker-ce docker-ce-cli containerd.io -y
-systemctl start docker
-systemctl enable docker
-  echo -e "bắt đầu cài đặt Docker Compose "
-curl -fsSL https://get.docker.com | bash -s docker
-curl -L "https://github.com/docker/compose/releases/download/1.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-  echo "khởi động Docker "
-  service docker start
-  echo "khởi động Docker-Compose "
-  docker-compose up -d
-  echo
-  echo -e "Đã hoàn tất cài đặt phụ trợ ！"
-  echo -e "0 0 */3 * *  cd /root/${cur_dir} && /usr/local/bin/docker-compose pull && /usr/local/bin/docker-compose up -d" >>/etc/crontab
-  echo -e "Cài đặt cập nhật thời gian kết thúc đã hoàn tất! hệ thống sẽ update sau [${green}24H${plain}] Từ lúc bạn cài đặt"
-}
-
-install_check() {
-  if check_sys packageManager yum || check_sys packageManager apt; then
-    if centosversion 5; then
-      return 1
+    if [[ ! -f /etc/XrayR/config.yml ]]; then
+        cp config.yml /etc/XrayR/
+        echo -e ""
+    else
+        systemctl start XrayR
+        sleep 2
+        check_status
+        echo -e ""
+        if [[ $? == 0 ]]; then
+            echo -e "${green}XrayR 重启成功${plain}"
+        else
+            echo -e "${red}XrayR 可能启动失败，请稍后使用 XrayR log 查看日志信息，若无法启动，则可能更改了配置格式，请前往 wiki 查看：https://github.com/XrayR-project/XrayR/wiki${plain}"
+        fi
     fi
-    return 0
-  else
-    return 1
-  fi
-}
 
-install_dependencies() {
-  if check_sys packageManager yum; then
-    echo -e "[${green}Info${plain}] Kiểm tra kho EPEL ..."
-    if [ ! -f /etc/yum.repos.d/epel.repo ]; then
-      yum install -y epel-release >/dev/null 2>&1
+    if [[ ! -f /etc/XrayR/dns.json ]]; then
+        cp dns.json /etc/XrayR/
     fi
-    [ ! -f /etc/yum.repos.d/epel.repo ] && echo -e "[${red}Error${plain}] Không cài đặt được kho EPEL, vui lòng kiểm tra." && exit 1
-    [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils >/dev/null 2>&1
-    [ x"$(yum-config-manager epel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable epel >/dev/null 2>&1
-    echo -e "[${green}Info${plain}] Kiểm tra xem kho lưu trữ EPEL đã hoàn tất chưa ..."
-
-    yum_depends=(
-      curl
-    )
-    for depend in ${yum_depends[@]}; do
-      error_detect_depends "yum -y install ${depend}"
-    done
-  elif check_sys packageManager apt; then
-    apt_depends=(
-      curl
-    )
-    apt-get -y update
-    for depend in ${apt_depends[@]}; do
-      error_detect_depends "apt-get -y install ${depend}"
-    done
-  fi
-  echo -e "[${green}Info${plain}] Đặt múi giờ thành phố Hà Nội GTM+7"
-  ln -sf /usr/share/zoneinfo/Asia/Hanoi  /etc/localtime
-  date -s "$(curl -sI g.cn | grep Date | cut -d' ' -f3-6)Z"
-
+    if [[ ! -f /etc/XrayR/route.json ]]; then
+        cp route.json /etc/XrayR/
+    fi
+    if [[ ! -f /etc/XrayR/custom_outbound.json ]]; then
+        cp custom_outbound.json /etc/XrayR/
+    fi
+    if [[ ! -f /etc/XrayR/custom_inbound.json ]]; then
+        cp custom_inbound.json /etc/XrayR/
+    fi
+    if [[ ! -f /etc/XrayR/rulelist ]]; then
+        cp rulelist /etc/XrayR/
+    fi
+    curl -o /usr/bin/XrayR -Ls https://raw.githubusercontent.com/AZZ-vopp/XrayR-bk/master/XrayR.sh
+    chmod +x /usr/bin/XrayR
+    ln -s /usr/bin/XrayR /usr/bin/xrayr # 小写兼容
+    chmod +x /usr/bin/xrayr
+    cd $cur_dir
+    rm -f install.sh
+    echo -e "https://github.com/XrayR-project/XrayR-release"
+    echo "XrayR 管理脚本使用方法 (兼容使用xrayr执行，大小写不敏感): "
+    echo "------------------------------------------"
+    echo "XrayR                    - 显示管理菜单 (功能更多)"
+    echo "XrayR start              - 启动 XrayR"
+    echo "XrayR stop               - 停止 XrayR"
+    echo "XrayR restart            - 重启 XrayR"
+    echo "XrayR status             - 查看 XrayR 状态"
+    echo "XrayR enable             - 设置 XrayR 开机自启"
+    echo "XrayR disable            - 取消 XrayR 开机自启"
+    echo "XrayR log                - 查看 XrayR 日志"
+    echo "XrayR update             - 更新 XrayR"
+    echo "XrayR update x.x.x       - 更新 XrayR 指定版本"
+    echo "XrayR config             - 显示配置文件内容"
+    echo "XrayR install            - 安装 XrayR"
+    echo "XrayR uninstall          - 卸载 XrayR"
+    echo "XrayR version            - 查看 XrayR 版本"
+    echo "------------------------------------------"
 }
 
-#update_image
-Update_xrayr() {
-  cd ${cur_dir}
-  echo "Tải Plugin DOCKER"
-  docker-compose pull
-  echo "Bắt đầu chạy dịch vụ DOCKER"
-  docker-compose up -d
-}
-
-#show last 100 line log
-
-logs_xrayr() {
-  echo "nhật ký chạy sẽ được hiển thị"
-  docker-compose logs --tail 100
-}
-
-# Update config
-UpdateConfig_xrayr() {
-  cd ${cur_dir}
-  echo "đóng dịch vụ hiện tại"
-  docker-compose down
-  pre_install_docker_compose
-  config_docker
-  echo "Bắt đầu chạy dịch vụ DOKCER"
-  docker-compose up -d
-}
-
-restart_xrayr() {
-  cd ${cur_dir}
-  docker-compose down
-  docker-compose up -d
-  echo "Khởi động lại thành công!"
-}
-delete_xrayr() {
-  cd ${cur_dir}
-  docker-compose down
-  cd ~
-  rm -Rf ${cur_dir}
-  echo "đã xóa thành công!"
-}
-# Install xrayr
-Install_xrayr() {
-  pre_install_docker_compose
-  config_docker
-  install_docker
-}
-
-# Initialization step
-clear
-while true; do
-  echo "Vui lòng nhập một số để Thực Hiện Câu Lệnh:"
-  for ((i = 1; i <= ${#operation[@]}; i++)); do
-    hint="${operation[$i - 1]}"
-    echo -e "${green}${i}${plain}) ${hint}"
-  done
-  read -p "Vui lòng chọn một số và nhấn Enter (Enter theo mặc định ${operation[0]}):" selected
-  [ -z "${selected}" ] && selected="1"
-  case "${selected}" in
-  1 | 2 | 3 | 4 | 5 | 6 | 7)
-    echo
-    echo "Bắt Đầu : ${operation[${selected} - 1]}"
-    echo
-    ${operation[${selected} - 1]}_xrayr
-    break
-    ;;
-  *)
-    echo -e "[${red}Error${plain}] Vui lòng nhập số chính xác [1-6]"
-    ;;
-  esac
-
-done
+echo -e "${green}开始安装${plain}"
+install_base
+# install_acme
+install_XrayR $1
