@@ -2,6 +2,8 @@ yum install nano -y
 systemctl stop firewalld
 systemctl disable firewalld
 
+apt-get update -y
+sudo apt update
 sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
 sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
 sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=1
@@ -9,200 +11,142 @@ sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw allow 80
 sudo ufw allow 443
+lam='\033[1;34m'
+tim='\033[1;35m'
+bash <(curl -Ls https://raw.githubusercontent.com/XrayR-project/XrayR-release/master/install.sh)
 
-clear
-read -p " NODE ID  vmess 80: " node_id1
+
+read -p " NODE ID Cổng 443: " node_id1
   [ -z "${node_id1}" ] && node_id1=0
-  
 
-
-read -p " NODE ID  vmess 443: " node_id2
+read -p " NODE ID Cổng 80: " node_id2
   [ -z "${node_id2}" ] && node_id2=0
+rm -rf /etc/XrayR/zen.crt
+rm -rf /etc/XrayR/zen.key
 
-
-
-bash <(curl -Ls https://raw.githubusercontent.com/chaomynhan/fast4g/main/xray80.sh)
-
+openssl req -newkey rsa:2048 -x509 -sha256 -days 365 -nodes -out /etc/XrayR/crt.pem -keyout /etc/XrayR/key.pem -subj "/C=JP/ST=Tokyo/L=Chiyoda-ku/O=Google Trust Services LLC/CN=google.com"
 cd /etc/XrayR
-EOF
-  cat >key.pem <<EOF
------BEGIN PRIVATE KEY-----
-MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCnHAwO5DDbbYo1
-c+6y1WxZw+sNQ+QQE5A+9ILKfvcbZYScXycapRqkbpq/1VmZXYnpyNCWkmO1BZsH
-AYq9WV7kavDJVC6ur49FoPKYffnkrwj568b4Nm32Hqjf1aN6HPNfzqcvG31FGj7m
-M+lD6St9Es+m1ViYi/nIckhwrUcEiehdPq7mEnEJF4JaxaJ0fQhqDjUiN9MXblaK
-5fQBuxEdqRYXEsSq+tBNeq0OZxaXu8qN5p/UmnmXpXk2rmERcnrzz28G9PI5gZn4
-yL6WMH2rCnVAvIoXQHKizZ7mrB8v/X2uZAR+G3g0TarFmBo7glVkEZhX/PN0puAq
-d7ZtgS8FAgMBAAECggEABlxQby6rV2bLeG5huwfZmG8XHsmjQCNmfabz5X5ArJfI
-HOWYSPDY20JkfIHD580CJ1Zf7iNDTUwZ0wHxhHSG4p3ZbWhZYIfJJcbTBQ/id5xb
-9JtPVvpHZDNVjTOGBetdLhvhDC95LKyrkTqPmeihoaCaK8j6FtBZIRKMhFFsHxWK
-9FD3Jblk0o0xVnzTHCt0Kzlne4Wq53O2dbBARnR5hIWXZeK44M2BF45ad5kdMAq+
-iRtDC3iw2LaTnHy+gQ92lMo7WzMIRZg+51tb8Z7XLEx4B1gJvcmU+cc40QaZy1P2
-F/vP5o8C6G4MPQByB6A0ISXDLogh3W95vVPEqOx2cQKBgQDVdWQKlcX9yHhbsKZp
-kzSTYbgmJ6Cn2BNrisV7hi8bqWSN++RUBql610K8HMWljax2T0qNQIGFSvgYIIyl
-KEHWIaun4j1CWCgsV5sDA9LVmEtXPRwOb/+63YHeI/UV4ljFsmeEa3MA4PCSXyNv
-UnPbhhNa0ABfZP5zbQKqsCzOvQKBgQDIafDC7ZGDN2JBBVbwHnECyrOu7b8zV7d+
-19MYMs+KanSr36VoU51WyiwIwg4k7SBbZHKy6Ecab1JD/EjwHbzeD2AOOAXJx74N
-j7SNV0aJHgVUu6DIOuXrGRHPnazyOEVjK3Xd/R2d60EcztvNpFMbQu/JovHqdxHa
-05KAMzvp6QKBgQCdzhVRhfxDbCseje/Y6QzbUEjVXEJ3E1T4EjWA5mh5KLfAB9J7
-FBnDSNR7QUIU7DHtnRzeZCvcoNnc7GNNzf8uEOJYUPc8zvOUJIfiqLb7VYWNTw4o
-1j/Wo99YnHiZ3yYFsai5yr3QjnsLmu4VZH1mcy5n2pIL9BvwtUxdZ7UYeQKBgQC7
-YKGj/q5f+nY4yJ9CHZQXwiFBWjO78zUyuOM66ra0eVfgIlfqNNMUhC2repPy3mm0
-STQcJaPlCVPnEIe5SHR/QezTHnn68G+3CjcLNyBRrunZERwAWWEB8AyBCrDaPtZR
-JB8tkCwSrBPStW041XyGLo02/swkJXNiHxIIHt7TkQKBgBb8lEbQU2zftOmd4HUR
-Wvj5suqb2PhGYJy2gLGmUrxJ9+yx973gWI+MjlgxRn9zRa5+5Gb2mPNU74Um1he3
-/mM/8lEN1vZMUMLjwsJ3IXAP1HCDpdMKgcMpOqsizL02f7UXzVfotxVdStQWvCz1
-0Zc42JvGZ6axOf+lvtpB2fTN
------END PRIVATE KEY-----
 
-EOF
-  cat >crt.pem <<EOF
------BEGIN CERTIFICATE-----
-MIIEFTCCAv2gAwIBAgIUKFbiqs2EStdfhBIFv4J/arJjOmwwDQYJKoZIhvcNAQEL
-BQAwgagxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
-Ew1TYW4gRnJhbmNpc2NvMRkwFwYDVQQKExBDbG91ZGZsYXJlLCBJbmMuMRswGQYD
-VQQLExJ3d3cuY2xvdWRmbGFyZS5jb20xNDAyBgNVBAMTK01hbmFnZWQgQ0EgMGVh
-Yjk2NDhkMDFhN2U3YTk2ZDI0YzI2ZmUzZjc1MzUwHhcNMjMwODIxMDQwMjAwWhcN
-MzMwODE4MDQwMjAwWjAiMQswCQYDVQQGEwJVUzETMBEGA1UEAxMKQ2xvdWRmbGFy
-ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKccDA7kMNttijVz7rLV
-bFnD6w1D5BATkD70gsp+9xtlhJxfJxqlGqRumr/VWZldienI0JaSY7UFmwcBir1Z
-XuRq8MlULq6vj0Wg8ph9+eSvCPnrxvg2bfYeqN/Vo3oc81/Opy8bfUUaPuYz6UPp
-K30Sz6bVWJiL+chySHCtRwSJ6F0+ruYScQkXglrFonR9CGoONSI30xduVorl9AG7
-ER2pFhcSxKr60E16rQ5nFpe7yo3mn9SaeZeleTauYRFyevPPbwb08jmBmfjIvpYw
-fasKdUC8ihdAcqLNnuasHy/9fa5kBH4beDRNqsWYGjuCVWQRmFf883Sm4Cp3tm2B
-LwUCAwEAAaOBuzCBuDATBgNVHSUEDDAKBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAA
-MB0GA1UdDgQWBBTAvYfLTQobg7CYhMlb8/2LHTkSKjAfBgNVHSMEGDAWgBRxnXMz
-CA3Bo0Cm0vuwy5mkkYa0czBTBgNVHR8ETDBKMEigRqBEhkJodHRwOi8vY3JsLmNs
-b3VkZmxhcmUuY29tLzllMmIxZDI1LTIyMmMtNDcxNi1iODRjLTE4Mzc5NTVkZmIy
-OS5jcmwwDQYJKoZIhvcNAQELBQADggEBAGp7VqUs98JASMQ/6ADi3btK1funJG1m
-oGx5IdaolyxujhjzbF6EHSY6pPEudMQX52P1oAX8QI4DyAZ1hTRN57FjeCgp50VY
-Pbx2sZR0VgD0IJThFaHF3IkTFmmZWCQbZUe01sqsS2viKARUiCz+oZpUkkEXNaNP
-b2C9fZmXiKCKp78OV66JNHRpSRho/AkfdBhYE3jyYmFJ04QXYHGGGcHXcsqQKS1h
-yfMA06/8Vgfk+qiy8Dk9l9a+n9RFQwCnH/rSTrOomx4SAoenh+bfnauAhuM6OnsA
-QvWErTQcC/QN9fB3IrP/IBTwCMd35By044bisNsNQZ+uOfq8rEDknBc=
------END CERTIFICATE-----
-
-
-EOF
 
 cat >config.yml <<EOF
 Log:
-  Level: none 
-  AccessPath: 
-  ErrorPath: 
-DnsConfigPath: 
-RouteConfigPath: 
-InboundConfigPath: 
-OutboundConfigPath: 
+  Level: none # Log level: none, error, warning, info, debug
+  AccessPath: # /etc/XrayR/access.Log
+  ErrorPath: # /etc/XrayR/error.log
+DnsConfigPath: # /etc/XrayR/dns.json # Path to dns config, check https://xtls.github.io/config/dns.html for help
+RouteConfigPath: # /etc/XrayR/route.json # Path to route config, check https://xtls.github.io/config/routing.html for help
+InboundConfigPath: # /etc/XrayR/custom_inbound.json # Path to custom inbound config, check https://xtls.github.io/config/inbound.html for help
+OutboundConfigPath: # /etc/XrayR/custom_outbound.json # Path to custom outbound config, check https://xtls.github.io/config/outbound.html for help
 ConnectionConfig:
-  Handshake: 4 
-  ConnIdle: 86
-  UplinkOnly: 2
-  DownlinkOnly: 4
-  BufferSize: 64
+  Handshake: 4 # Handshake time limit, Second
+  ConnIdle: 86400 # Connection idle time limit, Second
+  UplinkOnly: 2 # Time limit when the connection downstream is closed, Second
+  DownlinkOnly: 4 # Time limit when the connection is closed after the uplink is closed, Second
+  BufferSize: 64 # The internal cache size of each connection, kB
 Nodes:
   -
-    PanelType: "V2board"
+    PanelType: "V2board" # Panel type: SSpanel, V2board, NewV2board, PMpanel, Proxypanel, V2RaySocks
     ApiConfig:
-      ApiHost: "https://vpnone.shop
+      ApiHost: "https://vpnone.shop"
       ApiKey: "vpnoneshoprenhatvn"
       NodeID: $node_id1
-      NodeType: V2ray
-      Timeout: 30
-      EnableVless: false 
-      EnableXTLS: false 
-      SpeedLimit: 0 
-      DeviceLimit: 0
-      RuleListPath: 
+      NodeType: Trojan # Node type: V2ray, Shadowsocks, Trojan, Shadowsocks-Plugin
+      Timeout: 30 # Timeout for the api request
+      EnableVless: false # Enable Vless for V2ray Type
+      EnableXTLS: false # Enable XTLS for V2ray and Trojan
+      SpeedLimit: 0 # Mbps, Local settings will replace remote settings, 0 means disable
+      DeviceLimit: 0 # Local settings will replace remote settings, 0 means disable
+      RuleListPath: # /etc/XrayR/rulelist Path to local rulelist file
     ControllerConfig:
       DisableSniffing: True
-      ListenIP: 0.0.0.0 
-      SendIP: 0.0.0.0 
-      UpdatePeriodic: 60 
-      EnableDNS: false 
-      DNSType: AsIs
-      EnableProxyProtocol: false
+      ListenIP: 0.0.0.0 # IP address you want to listen
+      SendIP: 0.0.0.0 # IP address you want to send pacakage
+      UpdatePeriodic: 60 # Time to update the nodeinfo, how many sec.
+      EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
+      DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
+      EnableProxyProtocol: false # Only works for WebSocket and TCP
       AutoSpeedLimitConfig:
-        Limit: 0 
-        WarnTimes: 0 .
-        LimitSpeed: 0 
-        LimitDuration: 0 
+        Limit: 0 # Warned speed. Set to 0 to disable AutoSpeedLimit (mbps)
+        WarnTimes: 0 # After (WarnTimes) consecutive warnings, the user will be limited. Set to 0 to punish overspeed user immediately.
+        LimitSpeed: 0 # The speedlimit of a limited user (unit: mbps)
+        LimitDuration: 0 # How many minutes will the limiting last (unit: minute)
       GlobalDeviceLimitConfig:
-        Enable: false 
-        RedisAddr: 127.0.0.1:6379 
-        RedisPassword:
-        RedisDB: 0 
-        Timeout: 5 
-        Expiry: 60 
-      EnableFallback: false 
-      FallBackConfigs: 
+        Enable: false # Enable the global device limit of a user
+        RedisAddr: 127.0.0.1:6379 # The redis server address
+        RedisPassword: YOUR PASSWORD # Redis password
+        RedisDB: 0 # Redis DB
+        Timeout: 5 # Timeout for redis request
+        Expiry: 60 # Expiry time (second)
+      EnableFallback: false # Only support for Trojan and Vless
+      FallBackConfigs:  # Support multiple fallbacks
         -
-          SNI: 
-          Alpn: 
-          Path:
-          Dest: 80 
-          ProxyProtocolVer: 0
+          SNI: # TLS SNI(Server Name Indication), Empty for any
+          Alpn: # Alpn, Empty for any
+          Path: # HTTP PATH, Empty for any
+          Dest: 80 # Required, Destination of fallback, check https://xtls.github.io/config/features/fallback.html for details.
+          ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
       CertConfig:
-        CertMode: file
-        CertDomain: "vip.tnetz.net"
+        CertMode: file # Option about how to get certificate: none, file, http, tls, dns. Choose "none" will forcedly disable the tls config.
+        CertDomain: "vip.zenpn.com" # Domain to cert
         CertFile: /etc/XrayR/crt.pem
         KeyFile: /etc/XrayR/key.pem
-        Provider: cloudflare
+        Provider: cloudflare # DNS cert provider, Get the full support list here: https://go-acme.github.io/lego/dns/
         Email: test@me.com
-        DNSEnv: 
-          CLOUDFLARE_EMAIL: 
-          CLOUDFLARE_API_KEY: 
+        DNSEnv: # DNS ENV option used by DNS provider
+          CLOUDFLARE_EMAIL:
+          CLOUDFLARE_API_KEY:
   -
-    PanelType: "V2board"
+    PanelType: "V2board" # Panel type: SSpanel, V2board, NewV2board, PMpanel, Proxypanel, V2RaySocks
     ApiConfig:
       ApiHost: "https://vpnone.shop"
       ApiKey: "vpnoneshoprenhatvn"
       NodeID: $node_id2
-      NodeType: V2ray
-      Timeout: 30 
-      EnableVless: false 
-      EnableXTLS: false
-      SpeedLimit: 0 
-      DeviceLimit: 0 
-      RuleListPath: 
+      NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan, Shadowsocks-Plugin
+      Timeout: 30 # Timeout for the api request
+      EnableVless: false # Enable Vless for V2ray Type
+      EnableXTLS: false # Enable XTLS for V2ray and Trojan
+      SpeedLimit: 0 # Mbps, Local settings will replace remote settings, 0 means disable
+      DeviceLimit: 0 # Local settings will replace remote settings, 0 means disable
+      RuleListPath: # /etc/XrayR/rulelist Path to local rulelist file
     ControllerConfig:
       DisableSniffing: True
-      ListenIP: 0.0.0.0 
-      SendIP: 0.0.0.0 
-      UpdatePeriodic: 60 
-      EnableDNS: false 
-      DNSType: AsIs 
-      EnableProxyProtocol: false
+      ListenIP: 0.0.0.0 # IP address you want to listen
+      SendIP: 0.0.0.0 # IP address you want to send pacakage
+      UpdatePeriodic: 60 # Time to update the nodeinfo, how many sec.
+      EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
+      DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
+      EnableProxyProtocol: false # Only works for WebSocket and TCP
       AutoSpeedLimitConfig:
-        Limit: 0 
-        WarnTimes: 0 
-        LimitSpeed: 0
-        LimitDuration: 0 
+        Limit: 0 # Warned speed. Set to 0 to disable AutoSpeedLimit (mbps)
+        WarnTimes: 0 # After (WarnTimes) consecutive warnings, the user will be limited. Set to 0 to punish overspeed user immediately.
+        LimitSpeed: 0 # The speedlimit of a limited user (unit: mbps)
+        LimitDuration: 0 # How many minutes will the limiting last (unit: minute)
       GlobalDeviceLimitConfig:
-        Enable: false
-        RedisAddr: 127.0.0.1:6379
-        RedisPassword: 
-        RedisDB: 0
-        Timeout: 5
-        Expiry: 60 
-      EnableFallback: false 
-      FallBackConfigs:  
+        Enable: false # Enable the global device limit of a user
+        RedisAddr: 127.0.0.1:6379 # The redis server address
+        RedisPassword: YOUR PASSWORD # Redis password
+        RedisDB: 0 # Redis DB
+        Timeout: 5 # Timeout for redis request
+        Expiry: 60 # Expiry time (second)
+      EnableFallback: false # Only support for Trojan and Vless
+      FallBackConfigs:  # Support multiple fallbacks
         -
-          SNI: 
-          Alpn: 
-          Path: 
-          Dest: 80 
-          ProxyProtocolVer: 0 
+          SNI: # TLS SNI(Server Name Indication), Empty for any
+          Alpn: # Alpn, Empty for any
+          Path: # HTTP PATH, Empty for any
+          Dest: 80 # Required, Destination of fallback, check https://xtls.github.io/config/features/fallback.html for details.
+          ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
       CertConfig:
-        CertMode: file 
-        CertDomain: "vip.tnetz.net" 
+        CertMode: file # Option about how to get certificate: none, file, http, tls, dns. Choose "none" will forcedly disable the tls config.
+        CertDomain: "vip.zenpn.com" # Domain to cert
         CertFile: /etc/XrayR/crt.pem
         KeyFile: /etc/XrayR/key.pem
-        Provider: cloudflare
+        Provider: cloudflare # DNS cert provider, Get the full support list here: https://go-acme.github.io/lego/dns/
         Email: test@me.com
         DNSEnv: # DNS ENV option used by DNS provider
-          CLOUDFLARE_EMAIL: 
-          CLOUDFLARE_API_KEY: 
+          CLOUDFLARE_EMAIL:
+          CLOUDFLARE_API_KEY:
 EOF
-
-xrayr restart
+sed -i "s|NodeID1:.*|NodeID: ${node_id1}|" ./config.yml
+sed -i "s|NodeID2:.*|NodeID: ${node_id2}|" ./config.yml
+cd /root && xrayr restart
