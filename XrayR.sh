@@ -110,7 +110,7 @@ update() {
 #    fi
     bash <(curl -Ls https://raw.githubusercontent.com/Dungkobietcode/XrayR_mod/main/install.sh) $version
     if [[ $? == 0 ]]; then
-        echo -e "${green}更新完成，已自动重启 XrayR，请使用 XrayR log 查看运行日志${plain}"
+        echo -e "${green}Quá trình cập nhật hoàn tất và XrayR đã tự động khởi động lại, vui lòng sử dụng nhật ký XrayR để xem nhật ký đang chạy${plain}"
         exit
     fi
 
@@ -280,7 +280,9 @@ update_shell() {
         echo -e "${green}Script nâng cấp thành công, vui lòng chạy lại Script.${plain}" && exit 0
     fi
 }
-
+block(){
+    bash <(curl -Ls https://raw.githubusercontent.com/AZZ-vopp/code-/main/blockspeedtest.sh)
+}
 # 0: running, 1: not running, 2: not installed
 check_status() {
     if [[ ! -f /etc/systemd/system/XrayR.service ]]; then
@@ -406,6 +408,7 @@ show_menu() {
  ${green}11.${plain} Cài Đặt Script Bbr (phiên bản mới nhất)
  ${green}12.${plain} Gỡ Cài Đặt XrayR 
  ${green}13.${plain} Hiển Thị Phiên Bản XrayR
+ ${green}14.${plain} Block Speedtest
  "
  #后续更新可加入上方字符串中
     show_status
@@ -440,6 +443,8 @@ show_menu() {
         ;;
         13) update_shell
         ;;
+        14) block
+        ;;
         *) echo -e "${red}Vui lòng nhập đúng số [0-12]${plain}"
         ;;
     esac
@@ -473,6 +478,8 @@ if [[ $# > 0 ]]; then
         "version") check_install 0 && show_XrayR_version 0
         ;;
         "update_shell") update_shell
+        ;;
+        "block") block
         ;;
         *) show_usage
     esac
