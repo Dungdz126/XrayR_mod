@@ -390,7 +390,7 @@ show_menu() {
     echo -e "
   ${green}XrayR Việt Hóa By https://github.com/dungkobietcode${plain}
 --- https://github.com/XrayR-project/XrayR ---
-  ${green}0.${plain} 修改配置
+  ${green}0.${plain} Mở Cài Đặt XrayR
 ————————————————
   ${green}1.${plain} Mở Config XrayR (Only Read)
   ${green}2.${plain} Khởi Động XrayR
