@@ -400,8 +400,8 @@ show_menu() {
   ${green}7.${plain} Tắt Tự Khởi Động XrayR
   ${green}8.${plain} Hiển Thị Nhật Ký
 ————————————————
-  ${green}9.${plain} 设置 XrayR 开机自启
- ${green}10.${plain} 取消 XrayR 开机自启
+  ${green}9.${plain} Bật Tự Khởi động XrayR
+ ${green}10.${plain} tắt Tự Khởi Động XrayR
 ————————————————
  ${green}11.${plain} Cài Đặt Script Bbr (phiên bản mới nhất)
  ${green}12.${plain} Gỡ Cài Đặt XrayR 
