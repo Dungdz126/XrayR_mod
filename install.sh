@@ -8,7 +8,7 @@ plain='\033[0m'
 cur_dir=$(pwd)
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}错误：${plain} Chưa Vào Root Xin Vui Lòng vào Root Trước khi Cài Đặt！\n" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}Sai Lầm：${plain} Chưa Vào Root Xin Vui Lòng vào Root Trước khi Cài Đặt！\n" && exit 1
 
 # check os
 if [[ -f /etc/redhat-release ]]; then
