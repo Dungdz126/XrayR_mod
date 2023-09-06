@@ -392,8 +392,8 @@ show_menu() {
 --- https://github.com/dungkobietcode/XrayR_mod ---
   ${green}0.${plain} Mở Cài Đặt XrayR
 ————————————————
-  ${green}1.${plain} Mở Config XrayR (Only Read)
-  ${green}2.${plain} Khởi Động XrayR
+  ${green}1.${plain} Kiểm Tra XrayR Đã Cài Đặt Hay Chưa
+  ${green}2.${plain} Cập Nhật Hoặc Kiểm Tra XrayR
   ${green}3.${plain} Dừng XrayR
 ————————————————
   ${green}4.${plain} Khởi Động Lại XrayR
