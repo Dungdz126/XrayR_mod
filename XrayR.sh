@@ -389,7 +389,7 @@ show_usage() {
 show_menu() {
     echo -e "
   ${green}XrayR Việt Hóa By https://github.com/dungkobietcode${plain}
---- https://github.com/XrayR-project/XrayR ---
+--- https://github.com/dungkobietcode/XrayR_mod ---
   ${green}0.${plain} Mở Cài Đặt XrayR
 ————————————————
   ${green}1.${plain} Mở Config XrayR (Only Read)
