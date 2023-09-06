@@ -270,7 +270,7 @@ install_bbr() {
 }
 
 update_shell() {
-    wget -O /usr/bin/XrayR -N --no-check-certificate https://raw.githubusercontent.com/XrayR-project/XrayR-release/master/XrayR.sh
+    wget -O /usr/bin/XrayR -N --no-check-certificate https://raw.githubusercontent.com/Dungkobietcode/XrayR_mod/main/XrayR.sh
     if [[ $? != 0 ]]; then
         echo ""
         echo -e "${red}Không tải được script, vui lòng kiểm tra xem VPS có kết nối được với Github không${plain}"
