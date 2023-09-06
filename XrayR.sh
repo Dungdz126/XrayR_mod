@@ -8,7 +8,7 @@ plain='\033[0m'
 version="v1.0.0"
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} Chưa Vào Root , Vào Root Trước Khi Sử Dụng！\n" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}Nhầm Lẫn: ${plain} Chưa Vào Root , Vào Root Trước Khi Sử Dụng！\n" && exit 1
 
 # check os
 if [[ -f /etc/redhat-release ]]; then
